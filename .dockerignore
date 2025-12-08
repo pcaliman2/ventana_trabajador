@@ -1,0 +1,17 @@
+.build/
+.git/
+.gitignore
+.android/
+.ios/
+.idea/
+.vscode/
+build/
+linux/
+windows/
+macos/
+test/
+*.iml
+*.log
+*.tmp
+*.swp
+pubspec.lock
