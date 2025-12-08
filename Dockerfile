@@ -1,7 +1,7 @@
 # =========================
 # STAGE 1: Build de Flutter Web
 # =========================
-FROM cirrusci/flutter:stable AS build
+FROM ghcr.io/cirruslabs/flutter:stable AS build
 
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
