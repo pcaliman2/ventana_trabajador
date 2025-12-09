@@ -1,4 +1,19 @@
 import 'package:flutter/material.dart';
+import 'screens/datos_basicos_page.dart';
+
+const Color kAzulProfundo = Color(0xFF152238);
+const Color kAzulSecundario = Color(0xFF1E3A5F);
+const Color kDorado = Color(0xFFCFAF6B);
+
+// Gris de fondo corporativo (fondo general de la app)
+const Color kGrisFondo = Color(0xFFE5E7EB);
+
+// Bordes / estados
+const Color kGrisBorde = Color(0xFFD1D5DB);
+const Color kGrisDeshabilitado = Color(0xFFE5E7EB);
+
+// Fondo de los Cards corporativos
+const Color kCardFondo = Color(0xFFF8F9FB);
 
 void main() {
   runApp(const WeighingApp());
@@ -13,55 +28,45 @@ class WeighingApp extends StatelessWidget {
       title: 'Nueva nota de pesaje',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF3F5F9), // gris-azulado suave
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1F6FE5), // azul corporativo
-          brightness: Brightness.light,
-        ),
-        cardColor: Colors.white,
+        scaffoldBackgroundColor: kGrisFondo,
+
         appBarTheme: const AppBarTheme(
+          foregroundColor: Colors.white,
           elevation: 0,
-          backgroundColor: Color(0xFFF3F5F9),
-          foregroundColor: Colors.black,
         ),
+
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: kGrisBorde),
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFD0D5DD)),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: kGrisDeshabilitado),
+            borderRadius: BorderRadius.circular(10),
           ),
           focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: kAzulSecundario, width: 2),
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFF1F6FE5), width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 10,
-          ),
-          labelStyle: const TextStyle(color: Color(0xFF4B5563)),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(foregroundColor: const Color(0xFF1F6FE5)),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: Color(0xFFD0D5DD)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF1F6FE5),
+            backgroundColor: kAzulSecundario,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: kAzulSecundario,
+            side: const BorderSide(color: kAzulSecundario),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         ),
       ),
@@ -80,49 +85,90 @@ class WeighingNotePage extends StatefulWidget {
 class _WeighingNotePageState extends State<WeighingNotePage> {
   String tipo = 'COMPRA';
   String sucursal = 'Sucursal A';
+  bool proveedorEnabled = true;
+  bool clienteEnabled = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Nueva nota de pesaje',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+      // APPBAR CON DEGRADADO
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [kAzulProfundo, Color(0xFF0F1A2E)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            title: Row(
+              children: const [
+                Icon(Icons.scale, color: kDorado, size: 26),
+                SizedBox(width: 8),
+                Text(
+                  'Nueva nota de pesaje',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeaderSection(),
-              const SizedBox(height: 16),
-              _buildMaterialsSection(),
-              const SizedBox(height: 16),
-              _buildWeighingDetailSection(),
-              const SizedBox(height: 16),
-              _buildBottomSection(),
-              const SizedBox(height: 24),
-              _buildActions(),
-            ],
-          ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _buildHeaderSection(context),
+            const SizedBox(height: 16),
+            _buildMaterialsSection(),
+            const SizedBox(height: 16),
+            _buildWeighingDetailSection(),
+            const SizedBox(height: 16),
+            _buildBottomSection(),
+            const SizedBox(height: 16),
+            _buildActions(),
+          ],
         ),
       ),
     );
   }
 
-  // BLOQUE 2: Datos generales
-  Widget _buildHeaderSection() {
+  // BLOQUE 1: Datos generales
+  Widget _buildHeaderSection(BuildContext context) {
     return Card(
       elevation: 3,
+      color: kCardFondo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Tipo / Sucursal
+            // TÍTULO DEL BLOQUE
+            Row(
+              children: const [
+                Icon(Icons.person_outline, color: kAzulProfundo),
+                SizedBox(width: 8),
+                Text(
+                  'Datos generales',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: kAzulProfundo,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(color: kGrisBorde),
+
+            const SizedBox(height: 16),
+
+            // Tipo y Sucursal
             Row(
               children: [
                 Expanded(
@@ -133,7 +179,13 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                       DropdownMenuItem(value: 'COMPRA', child: Text('COMPRA')),
                       DropdownMenuItem(value: 'VENTA', child: Text('VENTA')),
                     ],
-                    onChanged: (v) => setState(() => tipo = v ?? tipo),
+                    onChanged: (v) {
+                      setState(() {
+                        tipo = v!;
+                        proveedorEnabled = tipo == 'COMPRA';
+                        clienteEnabled = tipo == 'VENTA';
+                      });
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -151,73 +203,95 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                         child: Text('Sucursal B'),
                       ),
                     ],
-                    onChanged: (v) => setState(() => sucursal = v ?? sucursal),
+                    onChanged: (v) => setState(() => sucursal = v!),
                   ),
                 ),
               ],
             ),
+
             const SizedBox(height: 16),
 
-            // Identificación del Trabajador
             const TextField(
               decoration: InputDecoration(
-                labelText: 'Identificación del Trabajador',
+                labelText: 'Identificación del trabajador',
               ),
             ),
+
             const SizedBox(height: 16),
 
-            // Proveedor / Cliente
+            // PROVEEDOR / CLIENTE
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    enabled: proveedorEnabled,
+                    decoration: InputDecoration(
+                      labelText: 'Proveedor',
+                      fillColor: proveedorEnabled
+                          ? Colors.white
+                          : kGrisDeshabilitado,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    enabled: clienteEnabled,
+                    decoration: InputDecoration(
+                      labelText: 'Cliente',
+                      fillColor: clienteEnabled
+                          ? Colors.white
+                          : kGrisDeshabilitado,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // BOTÓN CAPTURAR DATOS BÁSICOS
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => DatosBasicosPage()),
+                  );
+                },
+                icon: const Icon(Icons.person_search, color: kAzulSecundario),
+                label: const Text(
+                  'Capturar datos básicos',
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: kAzulSecundario,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Placa / email / teléfono
             Row(
               children: const [
                 Expanded(
                   child: TextField(
-                    decoration: InputDecoration(labelText: 'Proveedor'),
+                    decoration: InputDecoration(labelText: 'Placa'),
                   ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
                   child: TextField(
-                    decoration: InputDecoration(labelText: 'Cliente'),
+                    decoration: InputDecoration(labelText: 'Email'),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Placa / email / Teléfono + Capturar datos básicos
-            Row(
-              children: [
-                const Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(labelText: 'Placa'),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(labelText: 'email'),
-                  ),
-                ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(labelText: 'Teléfono'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          'Capturar datos básicos',
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: TextField(
+                    decoration: InputDecoration(labelText: 'Teléfono'),
                   ),
                 ),
               ],
@@ -232,12 +306,12 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   Widget _buildMaterialsSection() {
     return Card(
       elevation: 3,
+      color: kCardFondo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Encabezados
             Row(
               children: const [
                 Expanded(flex: 2, child: _HeaderCell('Material')),
@@ -248,7 +322,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
               ],
             ),
             const SizedBox(height: 8),
-            // Fila de datos (ejemplo)
             Row(
               children: const [
                 Expanded(flex: 2, child: _ValueCell('Acero')),
@@ -268,6 +341,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   Widget _buildWeighingDetailSection() {
     return Card(
       elevation: 3,
+      color: kCardFondo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -276,10 +350,12 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
           children: [
             const Text(
               'Detalle de pesajes del material',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: kAzulProfundo,
+              ),
             ),
             const SizedBox(height: 12),
-            // Encabezados
             Row(
               children: const [
                 Expanded(child: _HeaderCell('Peso bruto (kg)')),
@@ -287,11 +363,10 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                 Expanded(child: _HeaderCell('Humedad (kg)')),
                 Expanded(child: _HeaderCell('Basura (kg)')),
                 Expanded(child: _HeaderCell('Peso neto (kg)')),
-                SizedBox(width: 110), // espacio para botón Examinar
+                SizedBox(width: 110),
               ],
             ),
             const SizedBox(height: 8),
-            // Fila de datos (ejemplo)
             Row(
               children: [
                 const Expanded(child: _ValueCell('520.00')),
@@ -318,6 +393,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   Widget _buildBottomSection() {
     return Card(
       elevation: 3,
+      color: kCardFondo,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -332,7 +408,10 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                 children: [
                   const Text(
                     'Fecha registro',
-                    style: TextStyle(fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: kAzulProfundo,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const TextField(
@@ -350,7 +429,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                     height: 120,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      color: const Color(0xFFE5E7EB),
+                      color: kGrisFondo,
                     ),
                     alignment: Alignment.center,
                     child: const Text(
@@ -363,11 +442,11 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
             ),
             const SizedBox(width: 24),
             // Columna derecha
-            Expanded(
+            const Expanded(
               flex: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
+                children: [
                   _SummaryRow('Kilos brutos totales', '520.00'),
                   SizedBox(height: 4),
                   _SummaryRow('Descuentos totales', '20.00'),
@@ -388,6 +467,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
+                        color: kAzulProfundo,
                       ),
                     ),
                   ),
@@ -428,7 +508,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 }
 
-// Widgets auxiliares para celdas y resumen
+// ====== WIDGETS AUXILIARES PARA TABLAS Y RESÚMENES ======
 
 class _HeaderCell extends StatelessWidget {
   final String text;
@@ -436,12 +516,18 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
-        color: Color(0xFF111827),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: kGrisBorde)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          color: kAzulProfundo,
+        ),
       ),
     );
   }
@@ -454,14 +540,14 @@ class _ValueCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFD0D5DD)),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: kGrisBorde)),
       ),
-      child: Text(text, style: const TextStyle(color: Color(0xFF111827))),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 13, color: Colors.black87),
+      ),
     );
   }
 }
@@ -469,6 +555,7 @@ class _ValueCell extends StatelessWidget {
 class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
+
   const _SummaryRow(this.label, this.value);
 
   @override
@@ -476,8 +563,18 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Color(0xFF111827))),
-        Text(value, style: const TextStyle(color: Color(0xFF111827))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, color: Colors.black87),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: kAzulProfundo,
+          ),
+        ),
       ],
     );
   }
