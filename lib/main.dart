@@ -365,12 +365,11 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 
   // ============================================================
-  // BLOQUE 2: MATERIALES (Kilos totales = Peso Neto)
+  // BLOQUE 2: MATERIALES (tabla sin scroll horizontal)
   // ============================================================
 
   Widget _buildMaterialsSection() {
     final info = _materiales[_materialSeleccionado]!;
-
     final kilosTotales = _parse(_pesoNetoCtrl.text);
     final importe = info.precioKg * kilosTotales;
 
@@ -401,7 +400,9 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                     options: _materiales.keys.toList(),
                     onChanged: (nuevo) {
                       if (nuevo == null) return;
-                      setState(() => _materialSeleccionado = nuevo);
+                      setState(() {
+                        _materialSeleccionado = nuevo;
+                      });
                     },
                   ),
                 ),
@@ -427,7 +428,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 
   // ============================================================
-  // BLOQUE 3: DETALLE DE PESAJES
+  // BLOQUE 3: DETALLE DE PESAjes (inputs, sin scroll horizontal)
   // ============================================================
 
   Widget _buildWeighingDetailSection() {
@@ -496,7 +497,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 
   // ============================================================
-  // BLOQUE 4: FECHA + FOTO + RESUMEN (DINÁMICO)
+  // BLOQUE 4: FECHA + FOTO + RESUMEN DINÁMICO
   // ============================================================
 
   Widget _buildBottomSection() {
@@ -564,10 +565,8 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                 ],
               ),
             ),
-
             const SizedBox(width: 24),
-
-            // Columna derecha: resumen dinámico
+            // Columna derecha: resumen
             Expanded(
               flex: 2,
               child: Column(
@@ -641,7 +640,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 }
 
 // ============================================================
-// MODELO DE MATERIAL
+// MODELO MATERIAL
 // ============================================================
 
 class MaterialInfo {
@@ -712,8 +711,8 @@ class _SummaryRow extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontWeight: FontWeight.w600,
             fontSize: 13,
+            fontWeight: FontWeight.w600,
             color: kAzulProfundo,
           ),
         ),
