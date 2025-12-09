@@ -65,7 +65,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   bool clienteEnabled = false;
 
   // ====== MATERIALES ======
-
   final Map<String, MaterialInfo> _materiales = const {
     'Acero': MaterialInfo(tipoPrecio: 'Regular', precioKg: 12.50),
     'Cobre': MaterialInfo(tipoPrecio: 'Premium', precioKg: 25.00),
@@ -75,12 +74,15 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   String _materialSeleccionado = 'Acero';
 
   // ====== CONTROLADORES PESAJES ======
-
   late TextEditingController _pesoBrutoCtrl;
   late TextEditingController _tierraCtrl;
   late TextEditingController _humedadCtrl;
   late TextEditingController _basuraCtrl;
   late TextEditingController _pesoNetoCtrl;
+
+  // ====== FECHA REGISTRO ======
+  DateTime? _fechaRegistro;
+  late TextEditingController _fechaCtrl;
 
   @override
   void initState() {
@@ -92,6 +94,11 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     _basuraCtrl = TextEditingController(text: '0.00');
     _pesoNetoCtrl = TextEditingController(text: '0.00');
 
+    _fechaCtrl = TextEditingController();
+    // Si quieres iniciar con hoy:
+    // _fechaRegistro = DateTime.now();
+    // _fechaCtrl.text = _formatDate(_fechaRegistro!);
+
     _recalcularPesoNeto();
   }
 
@@ -102,10 +109,19 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     _humedadCtrl.dispose();
     _basuraCtrl.dispose();
     _pesoNetoCtrl.dispose();
+    _fechaCtrl.dispose();
     super.dispose();
   }
 
+  // ====== HELPERS NUMÉRICOS Y FECHA ======
   double _parse(String s) => double.tryParse(s.replaceAll(',', '.')) ?? 0.0;
+
+  String _formatDate(DateTime d) {
+    final dd = d.day.toString().padLeft(2, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final yyyy = d.year.toString();
+    return '$dd/$mm/$yyyy';
+  }
 
   void _recalcularPesoNeto() {
     final bruto = _parse(_pesoBrutoCtrl.text);
@@ -116,7 +132,24 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     final neto = bruto - (tierra + humedad + basura);
     _pesoNetoCtrl.text = neto.toStringAsFixed(2);
 
-    setState(() {}); // refresca materiales y resumen
+    setState(() {}); // refresca Materiales y Resumen
+  }
+
+  Future<void> _seleccionarFecha() async {
+    final hoy = DateTime.now();
+    final seleccionada = await showDatePicker(
+      context: context,
+      initialDate: _fechaRegistro ?? hoy,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (seleccionada != null) {
+      setState(() {
+        _fechaRegistro = seleccionada;
+        _fechaCtrl.text = _formatDate(seleccionada);
+      });
+    }
   }
 
   @override
@@ -394,7 +427,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 
   // ============================================================
-  // BLOQUE 3: DETALLE DE PESAJES (SIN “EXAMINAR”)
+  // BLOQUE 3: DETALLE DE PESAJES
   // ============================================================
 
   Widget _buildWeighingDetailSection() {
@@ -500,9 +533,14 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const TextField(
+                  TextField(
+                    controller: _fechaCtrl,
                     readOnly: true,
-                    decoration: InputDecoration(hintText: '24/04/2024'),
+                    decoration: const InputDecoration(
+                      hintText: 'dd/mm/aaaa',
+                      suffixIcon: Icon(Icons.calendar_today_outlined),
+                    ),
+                    onTap: _seleccionarFecha,
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
