@@ -5,15 +5,15 @@ const Color kAzulProfundo = Color(0xFF152238);
 const Color kAzulSecundario = Color(0xFF1E3A5F);
 const Color kDorado = Color(0xFFCFAF6B);
 
-// Gris de fondo corporativo (fondo general de la app)
+// Gris general del fondo de la pantalla
 const Color kGrisFondo = Color(0xFFE5E7EB);
 
-// Bordes / estados
+// Fondo de los Cards
+const Color kCardFondo = Color(0xFFF8F9FB);
+
+// Bordes / Deshabilitados
 const Color kGrisBorde = Color(0xFFD1D5DB);
 const Color kGrisDeshabilitado = Color(0xFFE5E7EB);
-
-// Fondo de los Cards corporativos
-const Color kCardFondo = Color(0xFFF8F9FB);
 
 void main() {
   runApp(const WeighingApp());
@@ -51,6 +51,7 @@ class WeighingApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
+
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: kAzulSecundario,
@@ -60,6 +61,7 @@ class WeighingApp extends StatelessWidget {
             ),
           ),
         ),
+
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: kAzulSecundario,
@@ -91,7 +93,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // APPBAR CON DEGRADADO
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: Container(
@@ -148,7 +149,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TÍTULO DEL BLOQUE
             Row(
               children: const [
                 Icon(Icons.person_outline, color: kAzulProfundo),
@@ -165,10 +165,9 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
             ),
             const SizedBox(height: 12),
             const Divider(color: kGrisBorde),
-
             const SizedBox(height: 16),
 
-            // Tipo y Sucursal
+            // Tipo + Sucursal
             Row(
               children: [
                 Expanded(
@@ -219,7 +218,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 
             const SizedBox(height: 16),
 
-            // PROVEEDOR / CLIENTE
+            // Proveedor / Cliente
             Row(
               children: [
                 Expanded(
@@ -250,7 +249,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 
             const SizedBox(height: 14),
 
-            // BOTÓN CAPTURAR DATOS BÁSICOS
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
@@ -274,22 +272,25 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 
             const SizedBox(height: 16),
 
-            // Placa / email / teléfono
-            Row(
+            //  📱 Responsive: Placa / Email / Teléfono usando Wrap
+            Wrap(
+              spacing: 16,
+              runSpacing: 12,
               children: const [
-                Expanded(
+                SizedBox(
+                  width: 220,
                   child: TextField(
                     decoration: InputDecoration(labelText: 'Placa'),
                   ),
                 ),
-                SizedBox(width: 16),
-                Expanded(
+                SizedBox(
+                  width: 220,
                   child: TextField(
                     decoration: InputDecoration(labelText: 'Email'),
                   ),
                 ),
-                SizedBox(width: 16),
-                Expanded(
+                SizedBox(
+                  width: 220,
                   child: TextField(
                     decoration: InputDecoration(labelText: 'Teléfono'),
                   ),
@@ -302,7 +303,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 3: Materiales
+  // BLOQUE 2: Materiales
   Widget _buildMaterialsSection() {
     return Card(
       elevation: 3,
@@ -337,7 +338,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 4: Detalle de pesajes del material
+  // BLOQUE 3: Detalle de pesajes
   Widget _buildWeighingDetailSection() {
     return Card(
       elevation: 3,
@@ -389,7 +390,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 5: Fecha + foto + resumen
+  // BLOQUE 4: Fecha + foto + resumen
   Widget _buildBottomSection() {
     return Card(
       elevation: 3,
@@ -400,7 +401,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Columna izquierda
             Expanded(
               flex: 2,
               child: Column(
@@ -441,7 +441,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
               ),
             ),
             const SizedBox(width: 24),
-            // Columna derecha
             const Expanded(
               flex: 2,
               child: Column(
@@ -508,7 +507,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 }
 
-// ====== WIDGETS AUXILIARES PARA TABLAS Y RESÚMENES ======
+// ====== COMPONENTES AUXILIARES ======
 
 class _HeaderCell extends StatelessWidget {
   final String text;
@@ -518,7 +517,7 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: kGrisBorde)),
       ),
       child: Text(
