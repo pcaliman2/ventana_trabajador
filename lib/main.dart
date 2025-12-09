@@ -5,13 +5,9 @@ const Color kAzulProfundo = Color(0xFF152238);
 const Color kAzulSecundario = Color(0xFF1E3A5F);
 const Color kDorado = Color(0xFFCFAF6B);
 
-// Gris general del fondo de la pantalla
 const Color kGrisFondo = Color(0xFFE5E7EB);
-
-// Fondo de los Cards
 const Color kCardFondo = Color(0xFFF8F9FB);
 
-// Bordes / Deshabilitados
 const Color kGrisBorde = Color(0xFFD1D5DB);
 const Color kGrisDeshabilitado = Color(0xFFE5E7EB);
 
@@ -29,12 +25,10 @@ class WeighingApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: kGrisFondo,
-
         appBarTheme: const AppBarTheme(
           foregroundColor: Colors.white,
           elevation: 0,
         ),
-
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
@@ -49,26 +43,6 @@ class WeighingApp extends StatelessWidget {
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: kAzulSecundario, width: 2),
             borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: kAzulSecundario,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: kAzulSecundario,
-            side: const BorderSide(color: kAzulSecundario),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
           ),
         ),
       ),
@@ -89,6 +63,61 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   String sucursal = 'Sucursal A';
   bool proveedorEnabled = true;
   bool clienteEnabled = false;
+
+  // ====== MATERIALES ======
+
+  final Map<String, MaterialInfo> _materiales = const {
+    'Acero': MaterialInfo(tipoPrecio: 'Regular', precioKg: 12.50),
+    'Cobre': MaterialInfo(tipoPrecio: 'Premium', precioKg: 25.00),
+    'Aluminio': MaterialInfo(tipoPrecio: 'Regular', precioKg: 8.75),
+  };
+
+  String _materialSeleccionado = 'Acero';
+
+  // ====== CONTROLADORES PESAJES ======
+
+  late TextEditingController _pesoBrutoCtrl;
+  late TextEditingController _tierraCtrl;
+  late TextEditingController _humedadCtrl;
+  late TextEditingController _basuraCtrl;
+  late TextEditingController _pesoNetoCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pesoBrutoCtrl = TextEditingController(text: '0.00');
+    _tierraCtrl = TextEditingController(text: '0.00');
+    _humedadCtrl = TextEditingController(text: '0.00');
+    _basuraCtrl = TextEditingController(text: '0.00');
+    _pesoNetoCtrl = TextEditingController(text: '0.00');
+
+    _recalcularPesoNeto();
+  }
+
+  @override
+  void dispose() {
+    _pesoBrutoCtrl.dispose();
+    _tierraCtrl.dispose();
+    _humedadCtrl.dispose();
+    _basuraCtrl.dispose();
+    _pesoNetoCtrl.dispose();
+    super.dispose();
+  }
+
+  double _parse(String s) => double.tryParse(s.replaceAll(',', '.')) ?? 0.0;
+
+  void _recalcularPesoNeto() {
+    final bruto = _parse(_pesoBrutoCtrl.text);
+    final tierra = _parse(_tierraCtrl.text);
+    final humedad = _parse(_humedadCtrl.text);
+    final basura = _parse(_basuraCtrl.text);
+
+    final neto = bruto - (tierra + humedad + basura);
+    _pesoNetoCtrl.text = neto.toStringAsFixed(2);
+
+    setState(() {}); // refresca materiales y resumen
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +147,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
           ),
         ),
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -138,7 +166,10 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 1: Datos generales
+  // ============================================================
+  // BLOQUE 1: DATOS GENERALES
+  // ============================================================
+
   Widget _buildHeaderSection(BuildContext context) {
     return Card(
       elevation: 3,
@@ -167,7 +198,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
             const Divider(color: kGrisBorde),
             const SizedBox(height: 16),
 
-            // Tipo + Sucursal
             Row(
               children: [
                 Expanded(
@@ -218,7 +248,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 
             const SizedBox(height: 16),
 
-            // Proveedor / Cliente
             Row(
               children: [
                 Expanded(
@@ -272,7 +301,6 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
 
             const SizedBox(height: 16),
 
-            //  📱 Responsive: Placa / Email / Teléfono usando Wrap
             Wrap(
               spacing: 16,
               runSpacing: 12,
@@ -303,8 +331,16 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 2: Materiales
+  // ============================================================
+  // BLOQUE 2: MATERIALES (Kilos totales = Peso Neto)
+  // ============================================================
+
   Widget _buildMaterialsSection() {
+    final info = _materiales[_materialSeleccionado]!;
+
+    final kilosTotales = _parse(_pesoNetoCtrl.text);
+    final importe = info.precioKg * kilosTotales;
+
     return Card(
       elevation: 3,
       color: kCardFondo,
@@ -324,12 +360,31 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
             ),
             const SizedBox(height: 8),
             Row(
-              children: const [
-                Expanded(flex: 2, child: _ValueCell('Acero')),
-                Expanded(flex: 2, child: _ValueCell('Regular')),
-                Expanded(flex: 2, child: _ValueCell('12.50')),
-                Expanded(flex: 2, child: _ValueCell('500.00')),
-                Expanded(flex: 2, child: _ValueCell('6250.00')),
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _DropdownCell(
+                    value: _materialSeleccionado,
+                    options: _materiales.keys.toList(),
+                    onChanged: (nuevo) {
+                      if (nuevo == null) return;
+                      setState(() => _materialSeleccionado = nuevo);
+                    },
+                  ),
+                ),
+                Expanded(flex: 2, child: _ValueCell(info.tipoPrecio)),
+                Expanded(
+                  flex: 2,
+                  child: _ValueCell(info.precioKg.toStringAsFixed(2)),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: _ValueCell(kilosTotales.toStringAsFixed(2)),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: _ValueCell(importe.toStringAsFixed(2)),
+                ),
               ],
             ),
           ],
@@ -338,7 +393,10 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 3: Detalle de pesajes
+  // ============================================================
+  // BLOQUE 3: DETALLE DE PESAJES (SIN “EXAMINAR”)
+  // ============================================================
+
   Widget _buildWeighingDetailSection() {
     return Card(
       elevation: 3,
@@ -364,23 +422,37 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                 Expanded(child: _HeaderCell('Humedad (kg)')),
                 Expanded(child: _HeaderCell('Basura (kg)')),
                 Expanded(child: _HeaderCell('Peso neto (kg)')),
-                SizedBox(width: 110),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                const Expanded(child: _ValueCell('520.00')),
-                const Expanded(child: _ValueCell('8.00')),
-                const Expanded(child: _ValueCell('5.00')),
-                const Expanded(child: _ValueCell('7.00')),
-                const Expanded(child: _ValueCell('500.00')),
-                SizedBox(
-                  width: 110,
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    child: const Text('Examinar…'),
+                Expanded(
+                  child: _InputCell(
+                    controller: _pesoBrutoCtrl,
+                    onChanged: (_) => _recalcularPesoNeto(),
                   ),
+                ),
+                Expanded(
+                  child: _InputCell(
+                    controller: _tierraCtrl,
+                    onChanged: (_) => _recalcularPesoNeto(),
+                  ),
+                ),
+                Expanded(
+                  child: _InputCell(
+                    controller: _humedadCtrl,
+                    onChanged: (_) => _recalcularPesoNeto(),
+                  ),
+                ),
+                Expanded(
+                  child: _InputCell(
+                    controller: _basuraCtrl,
+                    onChanged: (_) => _recalcularPesoNeto(),
+                  ),
+                ),
+                Expanded(
+                  child: _InputCell(controller: _pesoNetoCtrl, readOnly: true),
                 ),
               ],
             ),
@@ -390,8 +462,21 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 4: Fecha + foto + resumen
+  // ============================================================
+  // BLOQUE 4: FECHA + FOTO + RESUMEN (DINÁMICO)
+  // ============================================================
+
   Widget _buildBottomSection() {
+    final bruto = _parse(_pesoBrutoCtrl.text);
+    final tierra = _parse(_tierraCtrl.text);
+    final humedad = _parse(_humedadCtrl.text);
+    final basura = _parse(_basuraCtrl.text);
+    final neto = _parse(_pesoNetoCtrl.text);
+
+    final descuentos = tierra + humedad + basura;
+    final precioKg = _materiales[_materialSeleccionado]!.precioKg;
+    final importeTotal = precioKg * neto;
+
     return Card(
       elevation: 3,
       color: kCardFondo,
@@ -401,6 +486,7 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Columna izquierda: fecha + foto
             Expanded(
               flex: 2,
               child: Column(
@@ -440,19 +526,25 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                 ],
               ),
             ),
+
             const SizedBox(width: 24),
-            const Expanded(
+
+            // Columna derecha: resumen dinámico
+            Expanded(
               flex: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _SummaryRow('Kilos brutos totales', '520.00'),
-                  SizedBox(height: 4),
-                  _SummaryRow('Descuentos totales', '20.00'),
-                  SizedBox(height: 4),
-                  _SummaryRow('Kilos netos totales', '500.00'),
-                  SizedBox(height: 8),
-                  Align(
+                  _SummaryRow('Kilos brutos totales', bruto.toStringAsFixed(2)),
+                  const SizedBox(height: 4),
+                  _SummaryRow(
+                    'Descuentos totales',
+                    descuentos.toStringAsFixed(2),
+                  ),
+                  const SizedBox(height: 4),
+                  _SummaryRow('Kilos netos totales', neto.toStringAsFixed(2)),
+                  const SizedBox(height: 8),
+                  const Align(
                     alignment: Alignment.centerRight,
                     child: Text(
                       'Importe total',
@@ -462,8 +554,8 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '6250.00',
-                      style: TextStyle(
+                      importeTotal.toStringAsFixed(2),
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         color: kAzulProfundo,
@@ -479,7 +571,10 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
     );
   }
 
-  // BLOQUE 6: Botones finales
+  // ============================================================
+  // BLOQUE 5: BOTONES FINALES
+  // ============================================================
+
   Widget _buildActions() {
     return Row(
       children: [
@@ -507,7 +602,20 @@ class _WeighingNotePageState extends State<WeighingNotePage> {
   }
 }
 
-// ====== COMPONENTES AUXILIARES ======
+// ============================================================
+// MODELO DE MATERIAL
+// ============================================================
+
+class MaterialInfo {
+  final String tipoPrecio;
+  final double precioKg;
+
+  const MaterialInfo({required this.tipoPrecio, required this.precioKg});
+}
+
+// ============================================================
+// WIDGETS AUXILIARES
+// ============================================================
 
 class _HeaderCell extends StatelessWidget {
   final String text;
@@ -562,19 +670,86 @@ class _SummaryRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, color: Colors.black87),
-        ),
+        Text(label, style: const TextStyle(fontSize: 13)),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 13,
             fontWeight: FontWeight.w600,
+            fontSize: 13,
             color: kAzulProfundo,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DropdownCell extends StatelessWidget {
+  final String value;
+  final List<String> options;
+  final ValueChanged<String?> onChanged;
+
+  const _DropdownCell({
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: kGrisBorde)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: value,
+          items: options
+              .map(
+                (m) => DropdownMenuItem(
+                  value: m,
+                  child: Text(m, style: const TextStyle(fontSize: 13)),
+                ),
+              )
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+class _InputCell extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
+  final bool readOnly;
+
+  const _InputCell({
+    required this.controller,
+    this.onChanged,
+    this.readOnly = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: kGrisBorde)),
+      ),
+      child: TextField(
+        controller: controller,
+        readOnly: readOnly,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: const InputDecoration(
+          isDense: true,
+          border: InputBorder.none,
+        ),
+        style: const TextStyle(fontSize: 13),
+        onChanged: onChanged,
+      ),
     );
   }
 }
